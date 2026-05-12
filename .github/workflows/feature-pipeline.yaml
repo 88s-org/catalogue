@@ -5,6 +5,8 @@ on:
 jobs:
   feature-pipeline:
     if: github.ref_name != 'main'
+    permissions:
+      statuses: write
     uses: 88s-org/workflows/.github/workflows/nodejs-feature-pipeline.yaml@main
     with:
       project: 'roboshop'
