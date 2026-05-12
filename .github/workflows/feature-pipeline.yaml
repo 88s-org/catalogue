@@ -2,9 +2,33 @@ name: feature-pipeline
 on:
   push:
   workflow_dispatch:
+    inputs:
+      deploy_to:
+        description: Target environment
+        required: true
+        type: choice
+        options: [dev, uat, prod]
+      version:
+        description: Commit SHA — required for UAT/PROD
+        required: false
+        type: string
+        default: ''
+      jira_key:
+        description: Jira issue key — required for PROD
+        required: false
+        type: string
+        default: ''
+      cr_number:
+        description: Change Request number — required for PROD
+        required: false
+        type: string
+        default: ''
+
 jobs:
   feature-pipeline:
     if: github.ref_name != 'main'
+    permissions:
+      statuses: write
     uses: 88s-org/workflows/.github/workflows/nodejs-feature-pipeline.yaml@main
     with:
       project: 'roboshop'
@@ -14,9 +38,16 @@ jobs:
 
   main-pipeline:
     if: github.ref_name == 'main'
+    permissions:
+      statuses: write
+      contents: write
     uses: 88s-org/workflows/.github/workflows/nodejs-main-pipeline.yaml@main
     with:
       project: 'roboshop'
       component: 'catalogue'
       environment: 'dev'
+      deploy_to: ${{ inputs.deploy_to || 'dev' }}
+      version: ${{ inputs.version || '' }}
+      jira_key: ${{ inputs.jira_key || '' }}
+      cr_number: ${{ inputs.cr_number || '' }}
     secrets: inherit
